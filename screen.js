@@ -2,6 +2,19 @@
 var Screen = {
   fps: 30,
   bgcolor: null,
+  mouse: {x: 0, y: 0,
+    left: {pressed: false, released: false, down: false},
+    right: {pressed: false, released: false, down: false},
+    middle: {pressed: false, released: false, down: false},
+    reset: function() {
+      Screen.mouse.left.pressed = false;
+      Screen.mouse.left.released = false;
+      Screen.mouse.right.pressed = false;
+      Screen.mouse.right.released = false;
+      Screen.mouse.middle.pressed = false;
+      Screen.mouse.middle.released = false;
+    }
+  },
   init: function() {
 
     Screen.paper = document.createElement("CANVAS");
@@ -11,14 +24,37 @@ var Screen = {
       Screen.width = window.innerWidth;
       Screen.height = window.innerHeight;
       Screen.paper.width = Screen.width;
-      Screen.paper.height = Screen.height
+      Screen.paper.height = Screen.height;
       Screen.paper.style.top = "0px";
       Screen.paper.style.left = "0px";
       Screen.paper.style.position = "absolute";
       draw_iterator();
     }
+    Screen.background(0);
     window.onresize();
-    Screen.background(0, 0, 0, 255);
+    Screen.paper.onmousemove = function(event) {
+      Screen.mouse.x = event.clientX;
+      Screen.mouse.y = event.clientY;
+    }
+    Screen.paper.onmousedown = function(event) {
+      var b = Screen.mouse.left;
+      if(event.button == 1) b = Screen.mouse.middle;
+      if(event.button == 2) b = Screen.mouse.right;
+      b.pressed = true;
+      b.down = true;
+    }
+    Screen.paper.onmouseup = function(event) {
+      var b = Screen.mouse.left;
+      if(event.button == 1) b = Screen.mouse.middle;
+      if(event.button == 2) b = Screen.mouse.right;
+      b.released = true;
+      b.down = false;
+    }
+    document.addEventListener("contextmenu", function(e){
+      e.preventDefault();
+    }, false);
+    Screen.paper.onContextMenu = function() {return false;}
+    Screen.backgroundDraw(0, 0, 0, 255);
     Screen.fill(255, 255, 255);
     Screen.rect(0, 0, 32, 32);
     delete Screen.init;
@@ -26,6 +62,8 @@ var Screen = {
   background: function(r, g, b, a) {
     if(r != undefined)
       Screen.bgcolor = new Color(r, g, b, a);
+  },
+  backgroundDraw: function() {
     Screen.fill(Screen.bgcolor);
     Screen.noStroke();
     Screen.rect(0, 0, Screen.width, Screen.height);
@@ -56,7 +94,25 @@ var Screen = {
     var sc = scale*Screen.width / preS;
     if(Orientation == Screen.HEIGHT) sc = scale*Screen.height / preS;
     Screen.pen.drawImage(img, x, y, sc*img.width, sc*img.height);
-    return true;
+    var r = {};
+    r.x = x;
+    r.y = y;
+    r.width = sc*img.width;
+    r.height = sc*img.height;
+    r.x1 = x;
+    r.y1 = y;
+    r.x2 = x + r.width;
+    r.y2 = y + r.height;
+    return r;
+  },
+  circle: function(x, y, r) {
+    Screen.arc(x, y, r, 0, 2*Math.PI);
+  },
+  arc: function(x, y, r, a1, a2) {
+    Screen.pen.beginPath();
+    Screen.pen.arc(x, y, r, a1, a2);
+    Screen.pen.fill();
+    Screen.pen.stroke();
   },
   WIDTH: 0,
   HEIGHT: 1
@@ -88,9 +144,17 @@ var object_drawables = [];
 function drawable(o) {
   object_drawables.push(o);
 }
+function clearData(obj) {
+  for(var i in object_drawables)
+    if(object_drawables[i] == obj) {
+      object_drawables.splice(i);
+      return;
+    }
+}
 function frame_iterator() {
   step_iterator();
   draw_iterator();
+  Screen.mouse.reset();
 }
 function step_iterator() {
   for(var i=0; i<object_drawables.length; i++)
@@ -101,7 +165,7 @@ function step_iterator() {
     if(object_drawables[i].endStep) object_drawables[i].endStep();
 }
 function draw_iterator() {
-  Screen.background();
+  Screen.backgroundDraw();
   for(var i=0; i<object_drawables.length; i++)
     if(object_drawables[i].beginDraw) object_drawables[i].beginDraw();
   for(var i=0; i<object_drawables.length; i++)
