@@ -1,4 +1,5 @@
 # Screen
+- Michael Hulbert
 ### Importing File
 ---
 In the HTML file:  
@@ -71,9 +72,9 @@ You have the choice to draw the image scaled in direct to the width or height of
 `Screen.drawImageScale(x, y, imageRefrence, scale, Screen.HEIGHT);`  
 scale is a value from 0-1
 ## Getting Dimensions
-You can get the dimensions of the screen by using width and height:
-`Screen.width'  
-'Screen.height'  
+You can get the dimensions of the screen by using width and height:  
+`Screen.width`  
+`Screen.height`  
 You can also get the dimensions of a drawn image
 ```
 var dim = Screen.drawImageScale(x, y, imageRefrence, scale, Screen.WIDTH);
@@ -88,6 +89,16 @@ dim.height;
 ```
 x and x1 are the same value always along with y and y1.  
 x2 and y2 refer to the bottom right position of the image (or x+width and y+height)  
+
+You may also get the same dimensions without having to draw any image to the screen:  
+`var dim = Screen.getImageScale(x, y, imageRefrence, scale, Screen.WIDTH);`  
+'var dim = Screen.getImage(x, y, imageRefrence);`  
+Or if you just want the normal width and height of an image (without scaling) you can get it directly from the image:  
+```
+var img = addImage("img.jpg");
+var w = img.width;
+var h = img.height;
+```
 
 ## The Mouse
 You also have options for getting information about the mouse  
