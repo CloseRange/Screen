@@ -59,6 +59,9 @@ var Screen = {
     Screen.rect(0, 0, 32, 32);
     delete Screen.init;
   },
+  strokeWeight: function(w) {
+    Screen.pen.lineWidth = w;
+  },
   background: function(r, g, b, a) {
     if(r != undefined)
       Screen.bgcolor = new Color(r, g, b, a);
@@ -82,10 +85,33 @@ var Screen = {
     Screen.pen.fillRect(x, y, w, h);
     Screen.pen.strokeRect(x, y, w, h);
   },
+  line: function(x1, y1, x2, y2) {
+    // console.log(x1, y1, x2, y2)
+    Screen.pen.beginPath();
+    Screen.pen.moveTo(x1, y1);
+    Screen.pen.lineTo(x2, y2);
+    Screen.pen.stroke();
+  },
   drawImage: function(x, y, img) {
     if(!img.hasLoaded) return false;
     Screen.pen.drawImage(img, x, y);
-    return true;
+    var r = {
+      x, y,
+      x1: x, y1: y,
+      width: img.width, height: img.height,
+      x2: x+img.width, y2: y+img.height
+    };
+    return r;
+  },
+  getImage: function(x, y, img) {
+    if(!img.hasLoaded) return false;
+    var r = {
+      x, y,
+      x1: x, y1: y,
+      width: img.width, height: img.height,
+      x2: x+img.width, y2: y+img.height
+    };
+    return r;
   },
   drawImageScale: function(x, y, img, scale, Orientation) {
     if(!img.hasLoaded) return false;
@@ -94,6 +120,23 @@ var Screen = {
     var sc = scale*Screen.width / preS;
     if(Orientation == Screen.HEIGHT) sc = scale*Screen.height / preS;
     Screen.pen.drawImage(img, x, y, sc*img.width, sc*img.height);
+    var r = {};
+    r.x = x;
+    r.y = y;
+    r.width = sc*img.width;
+    r.height = sc*img.height;
+    r.x1 = x;
+    r.y1 = y;
+    r.x2 = x + r.width;
+    r.y2 = y + r.height;
+    return r;
+  },
+  getImageScale: function(x, y, img, scale, Orientation) {
+    if(!img.hasLoaded) return false;
+    var preS = img.width;
+    if(Orientation == Screen.HEIGHT) preS = img.height;
+    var sc = scale*Screen.width / preS;
+    if(Orientation == Screen.HEIGHT) sc = scale*Screen.height / preS;
     var r = {};
     r.x = x;
     r.y = y;
@@ -143,6 +186,16 @@ function toDefault(base, def) {
 var object_drawables = [];
 function drawable(o) {
   object_drawables.push(o);
+}
+
+function deleteDrawable(obj) {
+  for(var i=0; i<object_drawables.length; i++) {
+    if(object_drawables[i] == obj) {
+      var o = object_drawables[i];
+      object_drawables.splice(i, 1);
+      delete o;
+    }
+  }
 }
 function clearData(obj) {
   for(var i in object_drawables)
@@ -203,11 +256,3 @@ function refreshLoop() {
   });
 }
 refreshLoop();
-// var x = document.createElement("IMG");
-// x.src = "img.jpg";
-// x.onload = function() {
-//   Screen.fill(255, 0, 0);
-//   Screen.rect(0, 0, 32, 32);
-//   Screen.pen.drawImage(x, 0, 0)
-// }
-//
