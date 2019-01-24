@@ -59,6 +59,11 @@ var Screen = {
     Screen.rect(0, 0, 32, 32);
     delete Screen.init;
   },
+  text: function(text, x, y) {
+    Screen.pen.font = "60px Arial";
+    Screen.pen.fillText(text, x, y+60);
+    // Screen.pen.strokeText(text, x, y);
+  },
   strokeWeight: function(w) {
     Screen.pen.lineWidth = w;
   },
