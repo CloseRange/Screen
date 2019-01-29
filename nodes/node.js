@@ -1,34 +1,26 @@
-var gate = {};
 class node {
-  constructor(x, y, width, height) {
-    this.width = width;
-    this.height = height;
-    if(!node.isFree(x, y, width, height)) {
-      delete this;
-    } else {
-      drawable(this);
-    }
-    this.x = x*grid.size;
-    this.y = y*grid.size;
-    this.isSelected = false;
-    grid.cell[x][y] = this;
+  constructor(x, y, img, size, resizable) {
+    this.x = x;
+    this.y = y;
+    this.img = addImage(img);
+    this.r = 0;
+    this.size = size;
+    this.canResize = resizable;
+    this.ins = [];
+    this.outs = [];
+    this.width = 1;
+    this.height = 1;
+    drawable(this);
   }
-  static isFree(x, y, width, height) {
-    for(var i=0; i<1; i++) {
-      for(var j=0; j<1; j++) {
-        var dx = x+i;
-        var dy = y+j;
-        if(dx < 0) return false;
-        if(dy < 0) return false;
-        if(dx >= grid.cellCount || dy >= grid.cellCount) return false
-        if(grid.cell[dx][dy] != null) return false;
-      }
-    }
-    return true;
+  draw() {
+    var sc = Screen.size(false, grid.scale);
+    var p = getPosition(this.x, this.y);
+    Screen.drawImageExt(p.x, p.y, this.img, sc, 0);
+    this.width = this.size * grid.scale * this.img.width;
+    this.height = this.size * grid.scale * this.img.height;
+  }
+  setIO(preIns, preOuts) {
   }
 }
-var tools = {
-  current: 0,
-  selection: 0,
-  move: 1
-};
+// new node(0, 0);
+// new node(100, 100);
