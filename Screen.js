@@ -73,6 +73,24 @@ var Screen = {
     Screen.rect(0, 0, 32, 32);
     delete Screen.init;
   },
+  fontSize: 30,
+  font: "Arial",
+  textAlign: {
+    h: 0,
+    v: 0
+  },
+  drawText: function(x, y, t) {
+    Screen.pen.font = Screen.fontSize + "px " + Screen.font;
+    if(Screen.textAlign.h == -1)
+      Screen.pen.textAlign = "left";
+    if(Screen.textAlign.h == 0)
+      Screen.pen.textAlign = "center";
+    if(Screen.textAlign.h == 1)
+      Screen.pen.textAlign = "right";
+    var h = Screen.fontSize;
+    Screen.pen.fillText(t, x, y +h*(2 - (Screen.textAlign.v+1))/2);
+    Screen.pen.strokeText(t, x, y +h*(2 - (Screen.textAlign.v+1))/2);
+  },
   strokeWeight: function(w) {
     Screen.pen.lineWidth = w;
   },
@@ -98,6 +116,33 @@ var Screen = {
   rect: function(x, y, w, h) {
     Screen.pen.fillRect(x, y, w, h);
     Screen.pen.strokeRect(x, y, w, h);
+  },
+  makeRoundRectDimensions: function(tl, tr, bl, br) {
+    return {
+      top: {
+        left: tl, right: tr
+      },
+      bot: {
+        left: bl, right: br
+      }
+    }
+  },
+  roundRect: function(x, y, w, h, rad) {
+    if(typeof rad === 'number') var r = Screen.makeRoundRectDimensions(rad, rad, rad, rad);
+    else r = rad;
+    Screen.pen.beginPath();
+    Screen.pen.moveTo(x+r.top.left, y);
+    Screen.pen.lineTo(x+w-r.top.right, y);
+    Screen.pen.quadraticCurveTo(x+w, y, x+w, y+r.top.right);
+    Screen.pen.lineTo(x+w, y+h-r.bot.right);
+    Screen.pen.quadraticCurveTo(x+w, y+h, x+w-r.bot.right, y+h);
+    Screen.pen.lineTo(x+r.bot.left, y+h);
+    Screen.pen.quadraticCurveTo(x, y+h, x, y+h-r.bot.left);
+    Screen.pen.lineTo(x, y+r.top.left);
+    Screen.pen.quadraticCurveTo(x, y, x+r.top.left, y);
+    Screen.pen.closePath();
+    Screen.pen.fill();
+    Screen.pen.stroke();
   },
   line: function(x1, y1, x2, y2) {
     // console.log(x1, y1, x2, y2)
@@ -277,15 +322,16 @@ var object_drawables = [];
 function drawable(o) {
   object_drawables.push(o);
 }
-
-function deleteDrawable(obj) {
+function fullDeleteDrawable(obj) {
   for(var i=0; i<object_drawables.length; i++) {
     if(object_drawables[i] == obj) {
       var o = object_drawables[i];
       object_drawables.splice(i, 1);
-      delete o;
     }
   }
+}
+function deleteDrawable(obj) {
+  obj.TIME_TO_DELETE = true;
 }
 function clearData(obj) {
   for(var i in object_drawables)
@@ -300,6 +346,8 @@ function frame_iterator() {
   Screen.mouse.reset();
 }
 function step_iterator() {
+  for(var i=0; i<object_drawables.length; i++)
+    if(object_drawables[i].TIME_TO_DELETE) fullDeleteDrawable(object_drawables[i]);
   for(var i=0; i<object_drawables.length; i++)
     if(object_drawables[i].beginLoop) object_drawables[i].beginLoop();
   for(var i=0; i<object_drawables.length; i++)
@@ -334,7 +382,7 @@ function addImage(name, func) {
   var x = document.createElement("IMG");
   x.src = name;
   x.func_end = func || function() {};
-
+  x.crossOrigin = "Anonymous";
   x.onload = function() {
     this.func_end();
     this.hasLoaded = true;
