@@ -1,6 +1,8 @@
 var tool = {
   selected: 1,
   inMenu: false,
+  wireing: false,
+  movingNode: false,
   nearest: {
     obj: null,
     dist: Infinity
@@ -11,8 +13,11 @@ var tool = {
     {obj: andNode_make, img: IMG.and.norm, size: 2}
   ],
   rotate: DIR.right,
+  beginStep() {
+    if(tool.wireing || tool.movingNode) tool.canMake = false;
+  },
   step() {
-    if(tool.inMenu || tool.nearest.obj) return;
+    if(tool.inMenu || tool.nearest.obj || !tool.canMake) return;
     if(Screen.mouse.left.pressed) {
       var mx = Screen.mouse.x - grid.x;
       var my = Screen.mouse.y - grid.y;
@@ -28,13 +33,14 @@ var tool = {
     tool.nearest.dist = Infinity;
     tool.nearest.obj = null;
     superHighlight = false;
-    tool.canMake = true;
+    if(!tool.wireing && !tool.movingNode) tool.canMake = true;
   },
   draw() {
     if(tool.inMenu) return;
     var lst = tool.list[tool.selected];
     if(!lst.img || !lst.img.hasLoaded) return;
     if(tool.nearest.obj) return;
+    if(!tool.canMake) return;
 
     var preS = lst.img.height;
     var scaler = grid.size / preS * (lst.size||1);

@@ -21,7 +21,11 @@ function mouseBox(x1, y1, x2, y2) {
   return mx > x1 && mx < x2 && my > y1 && my < y2;
 }
 function point(x, y) {
-  return {x, y};
+  return {x, y,
+    getReal() {
+      return point(x+grid.x, y+grid.y)
+    }
+  };
 }
 function getPosition(x, y) {
   return point(x+grid.x, y+grid.y);
@@ -53,6 +57,9 @@ function addDIR(d1, d2, d3, ect) {
   while(dn < 0) dn += 4;
   return dn;
 }
+function point_distance(x1, y1, x2, y2) {
+  return Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2))
+}
 function getDirectionIntegration(dir) {
   var dx = 0;
   var dy = 0;
@@ -71,9 +78,6 @@ function getDirectionIntegration(dir) {
     }
   }
   return point(dx, dy);
-}
-function point_distance(x1, y1, x2, y2) {
-  return Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2))
 }
 function getRotatedDirectionIntegration(norm) {
   return point(norm.y, -norm.x)

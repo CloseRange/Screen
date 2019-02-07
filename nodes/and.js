@@ -23,6 +23,13 @@ class andNode extends node {
   }
   step() {
   }
+  makeButtons() {
+    new optionGrow(this);
+    new optionShrink(this);
+    new option(this, 1, "Move", this.makeMoving);
+    new option(this, 2, "Delete");
+    new option(this, 3, "Grow");
+  }
 }
 function andNode_make(x, y) {
   return new andNode(x, y);
