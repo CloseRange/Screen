@@ -173,11 +173,7 @@ var Screen = {
     return r;
   },
   size: function(relative, scale, orientation) {
-    var r = {
-      relative,
-      scale,
-      orientation
-    };
+    var r = { relative, scale, orientation };
     r.getScale = function(width, height) {
       if(this.relative) {
         if(this.orientation == Screen.WIDTH) {
@@ -188,11 +184,13 @@ var Screen = {
       } else return this.scale;
     }
     r.getWidth = function(width, height) {
+      if(r.relative instanceof Number) return r.relative
       if(this.relative) {
         return this.getScale(width, height) * width;
       } else return this.scale * width;
     }
     r.getHeight = function(width, height) {
+      if(r.relative instanceof Number) return r.relative
       if(this.relative) {
         return this.getScale(width, height) * height;
       } else return this.scale * height;
@@ -209,6 +207,10 @@ var Screen = {
     Screen.pen.translate(-w/2, -h/2);
     Screen.pen.drawImage(img, 0, 0, w, h);
     Screen.pen.restore();
+  },
+  drawImageSized: function(x, y, img, width, height) {
+    if(!img.hasLoaded) return false;
+    Screen.pen.drawImage(img, x, y, width, height);
   },
   drawImageScale: function(x, y, img, scale, Orientation) {
     if(!img.hasLoaded) return false;
@@ -340,9 +342,31 @@ function clearData(obj) {
       return;
     }
 }
+
+var Cursor = {
+  image: null,
+  show: false,
+  center: false,
+  size: 32,
+  draw() {
+    if(Cursor.show) {
+      var of = 0;
+      if(Cursor.center)
+        of = -Cursor.size/2;
+      Screen.drawImageSized(Screen.mouse.x+of, Screen.mouse.y+of, Cursor.image, Cursor.size, Cursor.size);
+    }
+  },
+  set(t, center) {
+    if(!t) return;
+    Cursor.image = t;
+    Cursor.center = center;
+    Cursor.show = true;
+  }
+}
 function frame_iterator() {
   step_iterator();
   draw_iterator();
+  Cursor.draw();
   Screen.mouse.reset();
 }
 function step_iterator() {
@@ -388,6 +412,8 @@ function addImage(name, func) {
     this.hasLoaded = true;
   }
   x.hasLoaded = false;
+  image[name] = x;
+  list.push(x);
   return x;
 }
 const times = [];
@@ -404,6 +430,15 @@ function refreshLoop() {
   });
 }
 refreshLoop();
+class Entity {
+  constructor() {
+    drawable(this);
+  }
+  destroy() {
+    deleteDrawable(this);
+  }
+}
+
 
 document.documentElement.style.overflow = 'hidden';  // firefox, chrome
 document.body.scroll = "no"; // ie only
